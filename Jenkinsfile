@@ -17,9 +17,9 @@ pipeline {
                 script {
                     // Copy index-aws.html to the Jenkins server and then run the playbook
                     sh """
-                    cd upgrad-capstone-project/indexFiles
-                    cp -pr index-aws.html /home/ubuntu/indexFiles/index-aws.html
-                    cd ~/ansibleWork
+                    cd /var/lib/jenkins/workspace/capsprj-nginx-deploy-pipeline/indexFiles
+                    cp index-aws.html /home/ubuntu/indexFiles/index-aws.html
+                    cd /var/lib/jenkins/workspace/capsprj-nginx-deploy-pipeline/ansibleWork
                     ansible-playbook playbook.yaml -i inventory
                     """
                 }
@@ -30,9 +30,9 @@ pipeline {
                 script {
                     // Copy index-aws.html to the Jenkins server and then run the playbook
                     sh """
-                    cd upgrad-capstone-project/indexFiles
-                    cp -pr index-azure.html /home/ubuntu/indexFiles/index-aws.html
-                    cd ~/ansibleWork
+                    cd /var/lib/jenkins/workspace/capsprj-nginx-deploy-pipeline/indexFiles
+                    cp index-azure.html /home/ubuntu/indexFiles/index-azure.html
+                    cd /var/lib/jenkins/workspace/capsprj-nginx-deploy-pipeline/ansibleWork
                     ansible-playbook playbook.yaml -i inventory
                     """
                 }
