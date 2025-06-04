@@ -1,78 +1,42 @@
----
-- name: Installation of packages and Nginx Server
-  hosts: all
-  become: true
-  tasks:
-    - name:
-      ping:
-    - name: Update repositories cache and install nginx
-      apt:
-        name: nginx
-        update_cache: yes
-    - name: Ensure nginx is running
-      systemd:
-        name: nginx
-        state: started
-        enabled: yes
-- name: Copy the AWS Index File
-  hosts: awsvm
-  become: true
-  tasks:
-    - name: Create directory for static content
-      file:
-        path: /var/www/html/hello-world
-        state: directory
-        mode: 0755
-    - name: Create "index.html" file with "hello world" content
-      template:
-        src: /home/ubuntu/indexFiles/index-aws.html
-        dest: /var/www/html/hello-world/index.html
-        mode: 0644
-    - name: Copy "index.html" to default Nginx location
-      copy:
-        src: /var/www/html/hello-world/index.html
-        dest: /var/www/html/index.html
-        mode: 0644
-        remote_src: true
+pipeline {
+    agent any
 
-    - name: Enable default Nginx website
-      file:
-        src: /etc/nginx/sites-available/default
-        path: /etc/nginx/sites-enabled/default
-        state: link
+    environment {
+        GITHUB_REPO = 'https://github.com/srivastava-basu/upgrad-capstone-project.git'       
+    }
 
-    - name: Restart Nginx
-      service:
-        name: nginx
-        state: restarted
-- name: Copy the Azure Index File
-  hosts: azurevm
-  become: true
-  tasks:
-    - name: Create directory for static content
-      file:
-        path: /var/www/html/hello-world
-        state: directory
-        mode: 0755
-    - name: Create "index.html" file with "hello world" content
-      template:
-        src: /home/ubuntu/indexFiles/index-azure.html
-        dest: /var/www/html/hello-world/index.html
-        mode: 0644
-    - name: Copy "index.html" to default Nginx location
-      copy:
-        src: /var/www/html/hello-world/index.html
-        dest: /var/www/html/index.html
-        mode: 0644
-        remote_src: true
-
-    - name: Enable default Nginx website
-      file:
-        src: /etc/nginx/sites-available/default
-        path: /etc/nginx/sites-enabled/default
-        state: link
-
-    - name: Restart Nginx
-      service:
-        name: nginx
-        state: restarted
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pull the latest code from GitHub
+                git url: "${GITHUB_REPO}", branch: 'main'
+            }
+        }
+        stage('Deploy to AWS') {
+            steps {
+                script {
+                    // Copy index-aws.html to the Jenkins server and then run the playbook
+                    sh """
+                    cd upgrad-capstone-project/indexFiles
+                    cp -pr index-aws.html /home/ubuntu/indexFiles/index-aws.html
+                    cd ~/ansibleWork
+                    ansible-playbook playbook.yaml -i inventory
+                    """
+                }
+            }
+        }
+        stage('Deploy to Azure') {
+            steps {
+                script {
+                    // Copy index-aws.html to the Jenkins server and then run the playbook
+                    sh """
+                    cd upgrad-capstone-project/indexFiles
+                    cp -pr index-azure.html /home/ubuntu/indexFiles/index-aws.html
+                    cd ~/ansibleWork
+                    ansible-playbook playbook.yaml -i inventory
+                    """
+                }
+            }
+        }
+    }
+}
